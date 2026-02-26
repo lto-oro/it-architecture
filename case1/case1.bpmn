@@ -56,9 +56,9 @@
       <bpmn:extensionElements>
         <camunda:formData>
           <camunda:formField id="weight2" label="Gewicht der Sendung" type="long" defaultValue="${weight}" />
-          <camunda:formField id="address2" label="Empfängeradresse" type="string" defaultValue="${delivery_address}" />
+          <camunda:formField id="spedition_destination" label="Empfängeradresse" type="string" defaultValue="${delivery_address}" />
           <camunda:formField id="phone2" label="Telefonnummer" type="long" defaultValue="${phone}" />
-          <camunda:formField id="email2" label="Email" type="string" defaultValue="${email}" />
+          <camunda:formField id="email2" label="Email" type="string" defaultValue="${mail}" />
           <camunda:formField id="spedition_pickupdate" label="Abholdatum" type="string" />
           <camunda:formField id="spedition_deliverydate" label="Zustelldatum" type="string" />
           <camunda:formField id="spedition_order_id" label="Sendungsnummer" type="string" />
