@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "SpeditionController",
+            "request": "launch",
+            "mainClass": "com.group4.case1.SpeditionController",
+            "projectName": "case1"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-Case1Application<case1>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.group4.case1.Case1Application",
+            "projectName": "case1",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": " -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=51709 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dspring.jmx.enabled=true -Djava.rmi.server.hostname=localhost -Dspring.application.admin.enabled=true -Dspring.boot.project.name=case1"
+        }
+    ]
+}
