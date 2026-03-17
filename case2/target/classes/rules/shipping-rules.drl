@@ -1,0 +1,97 @@
+package rules
+
+import com.group4.case2.DecisionContext;
+import com.group4.case2.DecisionOutcome;
+import com.group4.case2.ShippingChannel;
+
+rule "CH_DE_STANDARD_SPEDITION"
+salience 100
+when
+    $ctx : DecisionContext( input.deliveryCountry == "CH" || input.deliveryCountry == "DE" )
+then
+    $ctx.setDecision(
+        DecisionOutcome.STANDARD_SPEDITION_AUTOMATED,
+        true,
+        ShippingChannel.STANDARD_SPEDITION,
+        "CH_DE_STANDARD_SPEDITION",
+        "Lieferungen in die Schweiz und nach Deutschland werden ueber die normale Spedition abgewickelt."
+    );
+end
+
+rule "RU_MANUAL_SANCTIONS_REVIEW"
+salience 90
+when
+    $ctx : DecisionContext( input.deliveryCountry == "RU" )
+then
+    $ctx.setDecision(
+        DecisionOutcome.MANUAL_REVIEW_REQUIRED,
+        false,
+        ShippingChannel.SANCTIONS_REVIEW,
+        "RU_MANUAL_SANCTIONS_REVIEW",
+        "Lieferungen in die Russische Foederation muessen manuell auf Sanktionen geprueft werden."
+    );
+end
+
+rule "AR_POST_UNAVAILABLE"
+salience 80
+when
+    $ctx : DecisionContext( input.deliveryCountry == "AR", input.weightKg < 60 )
+then
+    $ctx.setDecision(
+        DecisionOutcome.MANUAL_REVIEW_REQUIRED,
+        false,
+        ShippingChannel.POST,
+        "AR_POST_UNAVAILABLE",
+        "Fuer Argentinien unter 60kg waere die normale Post vorgesehen, es steht aber keine Post-Schnittstelle zur Verfuegung."
+    );
+end
+
+rule "AR_SPECIAL_SPEDITION_UNAVAILABLE"
+salience 70
+when
+    $ctx : DecisionContext( input.deliveryCountry == "AR", input.weightKg >= 60, input.weightKg <= 500 )
+then
+    $ctx.setDecision(
+        DecisionOutcome.MANUAL_REVIEW_REQUIRED,
+        false,
+        ShippingChannel.SPECIAL_SPEDITION_ARGENTINA,
+        "AR_SPECIAL_SPEDITION_UNAVAILABLE",
+        "Fuer Argentinien zwischen 60kg und 500kg waere eine Spezialspedition vorgesehen, die derzeit nicht integriert ist."
+    );
+end
+
+rule "AR_OVER_500_MANUAL"
+salience 60
+when
+    $ctx : DecisionContext( input.deliveryCountry == "AR", input.weightKg > 500 )
+then
+    $ctx.setDecision(
+        DecisionOutcome.MANUAL_REVIEW_REQUIRED,
+        false,
+        ShippingChannel.MANUAL_REVIEW,
+        "AR_OVER_500_MANUAL",
+        "Sendungen nach Argentinien ueber 500kg muessen fallspezifisch manuell behandelt werden."
+    );
+end
+
+rule "JP_AIR_FREIGHT_UNAVAILABLE"
+salience 50
+when
+    $ctx : DecisionContext( input.deliveryCountry == "JP", input.weightKg <= 200 )
+then
+    $ctx.setDecision(
+        DecisionOutcome.MANUAL_REVIEW_REQUIRED,
+        false,
+        ShippingChannel.AIR_FREIGHT,
+        "JP_AIR_FREIGHT_UNAVAILABLE",
+        "Sendungen nach Japan bis 200kg waeren Luftfracht, es steht aber keine Luftfracht-Schnittstelle zur Verfuegung."
+    );
+end
+
+rule "DEFAULT_MANUAL_REVIEW"
+salience 0
+when
+    $ctx : DecisionContext()
+then
+    // Default-Wert bleibt erhalten und deckt nicht spezifizierte Laender oder Gewichte ab.
+end

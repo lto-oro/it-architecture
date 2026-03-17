@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Case2Application",
+            "request": "launch",
+            "mainClass": "com.group4.case2.Case2Application",
+            "projectName": "case2"
+        },
+        {
+            "type": "java",
             "name": "SpeditionController",
             "request": "launch",
             "mainClass": "com.group4.case1.SpeditionController",

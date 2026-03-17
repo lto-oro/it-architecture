@@ -1,0 +1,8 @@
+country,weight_from_kg,weight_to_kg,outcome,auto_continue,recommended_channel,rule_id,reason
+CH,0,999999,STANDARD_SPEDITION_AUTOMATED,true,STANDARD_SPEDITION,CH_DE_STANDARD_SPEDITION,Lieferungen in die Schweiz werden ueber die normale Spedition abgewickelt.
+DE,0,999999,STANDARD_SPEDITION_AUTOMATED,true,STANDARD_SPEDITION,CH_DE_STANDARD_SPEDITION,Lieferungen nach Deutschland werden ueber die normale Spedition abgewickelt.
+RU,0,999999,MANUAL_REVIEW_REQUIRED,false,SANCTIONS_REVIEW,RU_MANUAL_SANCTIONS_REVIEW,Lieferungen in die Russische Foederation muessen manuell auf Sanktionen geprueft werden.
+AR,0,59,MANUAL_REVIEW_REQUIRED,false,POST,AR_POST_UNAVAILABLE,Fuer Argentinien unter 60kg waere die normale Post vorgesehen, aber keine Post-Schnittstelle ist integriert.
+AR,60,500,MANUAL_REVIEW_REQUIRED,false,SPECIAL_SPEDITION_ARGENTINA,AR_SPECIAL_SPEDITION_UNAVAILABLE,Fuer Argentinien zwischen 60kg und 500kg waere eine Spezialspedition vorgesehen, die derzeit nicht integriert ist.
+AR,501,999999,MANUAL_REVIEW_REQUIRED,false,MANUAL_REVIEW,AR_OVER_500_MANUAL,Sendungen nach Argentinien ueber 500kg muessen fallspezifisch manuell behandelt werden.
+JP,0,200,MANUAL_REVIEW_REQUIRED,false,AIR_FREIGHT,JP_AIR_FREIGHT_UNAVAILABLE,Sendungen nach Japan bis 200kg waeren Luftfracht, es steht aber keine Luftfracht-Schnittstelle zur Verfuegung.

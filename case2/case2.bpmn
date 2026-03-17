@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  xmlns:camunda="http://camunda.org/schema/1.0/bpmn"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xmlns:modeler="http://camunda.org/schema/modeler/1.0"
+                  id="Definitions_case2"
+                  targetNamespace="http://bpmn.io/schema/bpmn"
+                  exporter="Camunda Modeler"
+                  exporterVersion="5.44.0"
+                  modeler:executionPlatform="Camunda Platform"
+                  modeler:executionPlatformVersion="7.24.0">
+  <bpmn:process id="group4_case2" name="Group 4 - Case 2" isExecutable="true" camunda:historyTimeToLive="30">
+    <bpmn:startEvent id="StartEvent_1">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+
+    <bpmn:userTask id="Activity_ProcessOrder" name="Bearbeitung Kundenauftrag">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="client_nr" label="Kundennummer" type="long" />
+          <camunda:formField id="order_nr" label="Auftragsnummer" type="long" />
+          <camunda:formField id="weight" label="Gewicht der Sendung" type="long" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="Activity_FormA38" name="Formular A38 mit weiteren Informationen ergaenzen">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="delivery_address" label="Lieferadresse" type="string" />
+          <camunda:formField id="delivery_country" label="Lieferland ISO-Code" type="string" />
+          <camunda:formField id="phone" label="Kontakt Telefon" type="string" />
+          <camunda:formField id="mail" label="Kontakt Mail" type="string" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:serviceTask id="Activity_Decision" name="Versandentscheidung ermitteln" camunda:type="external" camunda:topic="group4_decision">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Decision" name="Automatische Weiterverarbeitung moeglich?">
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:serviceTask id="Activity_Shipping" name="Spedition beauftragen" camunda:type="external" camunda:topic="group4_rest">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+    </bpmn:serviceTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Shipping" name="Speditionsauftrag erfolgreich?">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="Activity_ManualShipping" name="Manuelle Versandentscheidung und Versand koordinieren">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="decision_recommended_channel_form" label="Empfohlener Versandkanal" type="string" defaultValue="${decision_recommended_channel}" />
+          <camunda:formField id="decision_reason_form" label="Begruendung" type="string" defaultValue="${decision_reason}" />
+          <camunda:formField id="weight_manual" label="Gewicht der Sendung" type="long" defaultValue="${weight}" />
+          <camunda:formField id="spedition_destination" label="Empfaengeradresse" type="string" defaultValue="${delivery_address}" />
+          <camunda:formField id="phone_manual" label="Telefonnummer" type="string" defaultValue="${phone}" />
+          <camunda:formField id="mail_manual" label="Email" type="string" defaultValue="${mail}" />
+          <camunda:formField id="spedition_pickupdate" label="Abholdatum" type="string" />
+          <camunda:formField id="spedition_deliverydate" label="Zustelldatum" type="string" />
+          <camunda:formField id="spedition_order_id" label="Sendungsnummer" type="string" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
+      <bpmn:outgoing>Flow_10</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:exclusiveGateway id="Gateway_Join">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+      <bpmn:incoming>Flow_10</bpmn:incoming>
+      <bpmn:outgoing>Flow_11</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+
+    <bpmn:userTask id="Activity_Email" name="Email an Kunden senden">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="sped_order_id" label="Speditions Sendungsnummer" type="string" defaultValue="${spedition_order_id}" />
+          <camunda:formField id="sped_deliverydate" label="Lieferdatum" type="string" defaultValue="${spedition_deliverydate}" />
+          <camunda:formField id="sped_pickupdate" label="Spedition Abholdatum" type="string" defaultValue="${spedition_pickupdate}" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_11</bpmn:incoming>
+      <bpmn:outgoing>Flow_12</bpmn:outgoing>
+    </bpmn:userTask>
+
+    <bpmn:userTask id="Activity_Save" name="Bestelldaten speichern">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="client_nr_save" label="Kundennummer" type="long" defaultValue="${client_nr}" />
+          <camunda:formField id="delivery_address_save" label="Zustelladresse" type="string" defaultValue="${spedition_destination}" />
+          <camunda:formField id="mail_save" label="Mail" type="string" defaultValue="${mail}" />
+          <camunda:formField id="phone_save" label="Telefonnummer" type="string" defaultValue="${phone}" />
+          <camunda:formField id="order_nr_save" label="Sendungsnummer" type="string" defaultValue="${spedition_order_id}" />
+          <camunda:formField id="spedition_pickupdate_save" label="Abholdatum" type="string" defaultValue="${spedition_pickupdate}" />
+          <camunda:formField id="spedition_deliverydate_save" label="Zustelldatum" type="string" defaultValue="${spedition_deliverydate}" />
+          <camunda:formField id="decision_rule_id_save" label="Entscheidungsregel" type="string" defaultValue="${decision_rule_id}" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_12</bpmn:incoming>
+      <bpmn:outgoing>Flow_13</bpmn:outgoing>
+      <bpmn:dataOutputAssociation id="DataOutputAssociation_1">
+        <bpmn:targetRef>DataStoreReference_1</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:userTask>
+
+    <bpmn:dataStoreReference id="DataStoreReference_1" name="Ablagefach P" />
+
+    <bpmn:endEvent id="EndEvent_1">
+      <bpmn:incoming>Flow_13</bpmn:incoming>
+    </bpmn:endEvent>
+
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Activity_ProcessOrder" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_ProcessOrder" targetRef="Activity_FormA38" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="Activity_FormA38" targetRef="Activity_Decision" />
+    <bpmn:sequenceFlow id="Flow_4" sourceRef="Activity_Decision" targetRef="Gateway_Decision" />
+    <bpmn:sequenceFlow id="Flow_5" name="Ja" sourceRef="Gateway_Decision" targetRef="Activity_Shipping">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${decision_auto_continue == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_6" name="Nein" sourceRef="Gateway_Decision" targetRef="Activity_ManualShipping">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${decision_auto_continue != true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="Activity_Shipping" targetRef="Gateway_Shipping" />
+    <bpmn:sequenceFlow id="Flow_8" name="Erfolg" sourceRef="Gateway_Shipping" targetRef="Gateway_Join">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${spedition_http_code == 202 || spedition_http_code == 200}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_9" name="Manuell" sourceRef="Gateway_Shipping" targetRef="Activity_ManualShipping">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">${spedition_http_code != 202 &amp;&amp; spedition_http_code != 200}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_10" sourceRef="Activity_ManualShipping" targetRef="Gateway_Join" />
+    <bpmn:sequenceFlow id="Flow_11" sourceRef="Gateway_Join" targetRef="Activity_Email" />
+    <bpmn:sequenceFlow id="Flow_12" sourceRef="Activity_Email" targetRef="Activity_Save" />
+    <bpmn:sequenceFlow id="Flow_13" sourceRef="Activity_Save" targetRef="EndEvent_1" />
+  </bpmn:process>
+
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="group4_case2">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="172" y="192" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ProcessOrder_di" bpmnElement="Activity_ProcessOrder">
+        <dc:Bounds x="260" y="170" width="110" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_FormA38_di" bpmnElement="Activity_FormA38">
+        <dc:Bounds x="430" y="170" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Decision_di" bpmnElement="Activity_Decision">
+        <dc:Bounds x="610" y="170" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Decision_di" bpmnElement="Gateway_Decision" isMarkerVisible="true">
+        <dc:Bounds x="790" y="185" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Shipping_di" bpmnElement="Activity_Shipping">
+        <dc:Bounds x="900" y="80" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Shipping_di" bpmnElement="Gateway_Shipping" isMarkerVisible="true">
+        <dc:Bounds x="1080" y="95" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_ManualShipping_di" bpmnElement="Activity_ManualShipping">
+        <dc:Bounds x="900" y="260" width="170" height="90" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Join_di" bpmnElement="Gateway_Join" isMarkerVisible="true">
+        <dc:Bounds x="1170" y="185" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Email_di" bpmnElement="Activity_Email">
+        <dc:Bounds x="1280" y="170" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_Save_di" bpmnElement="Activity_Save">
+        <dc:Bounds x="1460" y="170" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="DataStoreReference_1_di" bpmnElement="DataStoreReference_1">
+        <dc:Bounds x="1495" y="305" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="1642" y="192" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="208" y="210" />
+        <di:waypoint x="260" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="370" y="210" />
+        <di:waypoint x="430" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="550" y="210" />
+        <di:waypoint x="610" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="730" y="210" />
+        <di:waypoint x="790" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="815" y="185" />
+        <di:waypoint x="815" y="120" />
+        <di:waypoint x="900" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="815" y="235" />
+        <di:waypoint x="815" y="305" />
+        <di:waypoint x="900" y="305" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="1020" y="120" />
+        <di:waypoint x="1105" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1130" y="120" />
+        <di:waypoint x="1195" y="120" />
+        <di:waypoint x="1195" y="185" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
+        <di:waypoint x="1105" y="145" />
+        <di:waypoint x="1105" y="305" />
+        <di:waypoint x="1070" y="305" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_10_di" bpmnElement="Flow_10">
+        <di:waypoint x="1070" y="305" />
+        <di:waypoint x="1195" y="305" />
+        <di:waypoint x="1195" y="235" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_11_di" bpmnElement="Flow_11">
+        <di:waypoint x="1220" y="210" />
+        <di:waypoint x="1280" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_12_di" bpmnElement="Flow_12">
+        <di:waypoint x="1400" y="210" />
+        <di:waypoint x="1460" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13_di" bpmnElement="Flow_13">
+        <di:waypoint x="1580" y="210" />
+        <di:waypoint x="1642" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="DataOutputAssociation_1_di" bpmnElement="DataOutputAssociation_1">
+        <di:waypoint x="1520" y="250" />
+        <di:waypoint x="1520" y="305" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

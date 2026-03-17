@@ -1,0 +1,10 @@
+com\group4\case2\DecisionExternalTaskWorker.class
+com\group4\case2\ShippingChannel.class
+com\group4\case2\ShippingDecisionService.class
+com\group4\case2\DroolsRuleEvaluator.class
+com\group4\case2\DecisionResult.class
+com\group4\case2\DecisionContext.class
+com\group4\case2\Case2Application.class
+com\group4\case2\DecisionLogRepository.class
+com\group4\case2\DecisionOutcome.class
+com\group4\case2\DecisionInput.class
