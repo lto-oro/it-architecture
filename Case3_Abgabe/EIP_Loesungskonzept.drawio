@@ -1,0 +1,151 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.2.9 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36" version="29.2.9">
+  <diagram name="EIP Lösungskonzept" id="eip-case3">
+    <mxGraphModel dx="1913" dy="1369" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;" value="&lt;b&gt;Case 3 - Enterprise Messaging: Vollständiges EIP-Lösungskonzept&lt;/b&gt;&lt;br&gt;Gruppe 4 - Roberto Panizza, Loris Trifoglio" vertex="1">
+          <mxGeometry height="50" width="500" x="550" y="239" as="geometry" />
+        </mxCell>
+        <mxCell id="callcenter" parent="1" style="shape=mxgraph.eip.messageEndpoint;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontColor=#000000;" value="Callcenter" vertex="1">
+          <mxGeometry height="60" width="90" x="20" y="424" as="geometry" />
+        </mxCell>
+        <mxCell id="msg_job_in" parent="1" style="shape=mxgraph.eip.message;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=9;fontColor=#000000;" value="JobMessage" vertex="1">
+          <mxGeometry height="40" width="60" x="150" y="434" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cc_msg" edge="1" parent="1" source="callcenter" style="edgeStyle=orthogonalEdgeStyle;fontColor=#000000;" target="msg_job_in">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="cbr" parent="1" style="shape=mxgraph.eip.content_based_router;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;fontColor=#000000;" value="Content-Based&lt;br&gt;Router&lt;br&gt;&lt;i&gt;(Auftragstyp)&lt;/i&gt;" vertex="1">
+          <mxGeometry height="80" width="100" x="240" y="414" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_msg_cbr" edge="1" parent="1" source="msg_job_in" style="edgeStyle=orthogonalEdgeStyle;fontColor=#000000;" target="cbr">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="repair" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#000000;dashed=1;fontSize=10;" value="Direkte Koordination&lt;br&gt;&lt;i&gt;(out of scope)&lt;/i&gt;" vertex="1">
+          <mxGeometry height="50" width="130" x="225" y="554" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cbr_repair" edge="1" parent="1" source="cbr" style="edgeStyle=orthogonalEdgeStyle;fontColor=#FFFFFF;dashed=1;fontSize=9;" target="repair" value="Typ = Reparatur">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cbr_topic1" edge="1" parent="1" source="cbr" style="edgeStyle=orthogonalEdgeStyle;fontSize=9;fontColor=#FFFFFF;" target="topic_new" value="Typ = Wartung">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kDhN_aGwa5H9JqQ8UW2V-4" edge="1" parent="1" source="topic_new" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;curved=1;" target="ds2">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="600" y="457" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="kDhN_aGwa5H9JqQ8UW2V-5" edge="1" parent="1" source="topic_new" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;curved=1;" target="ds1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kDhN_aGwa5H9JqQ8UW2V-6" edge="1" parent="1" source="topic_new" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;curved=1;" target="ds3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="topic_new" parent="1" style="shape=mxgraph.eip.publish_subscribe_channel;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;fontColor=#000000;" value="Topic&lt;br&gt;&lt;b&gt;dispo.jobs.new&lt;/b&gt;" vertex="1">
+          <mxGeometry height="70" width="140" x="420" y="419" as="geometry" />
+        </mxCell>
+        <mxCell id="ds1" parent="1" style="shape=mxgraph.eip.durableSubscription;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;fontColor=#000000;" value="Durable&lt;br&gt;Subscriber" vertex="1">
+          <mxGeometry height="55" width="80" x="620" y="347" as="geometry" />
+        </mxCell>
+        <mxCell id="ds2" parent="1" style="shape=mxgraph.eip.durableSubscription;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;fontColor=#000000;" value="Durable&lt;br&gt;Subscriber" vertex="1">
+          <mxGeometry height="55" width="80" x="620" y="427" as="geometry" />
+        </mxCell>
+        <mxCell id="ds3" parent="1" style="shape=mxgraph.eip.durableSubscription;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;fontColor=#000000;" value="Durable&lt;br&gt;Subscriber" vertex="1">
+          <mxGeometry height="55" width="80" x="620" y="507" as="geometry" />
+        </mxCell>
+        <mxCell id="mf1" parent="1" style="shape=mxgraph.eip.message_filter;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;fontColor=#000000;" value="Message&lt;br&gt;Filter&lt;br&gt;&lt;i&gt;(Region)&lt;/i&gt;" vertex="1">
+          <mxGeometry height="55" width="80" x="750" y="347" as="geometry" />
+        </mxCell>
+        <mxCell id="mf2" parent="1" style="shape=mxgraph.eip.message_filter;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;fontColor=#000000;" value="Message&lt;br&gt;Filter&lt;br&gt;&lt;i&gt;(Region)&lt;/i&gt;" vertex="1">
+          <mxGeometry height="55" width="80" x="750" y="427" as="geometry" />
+        </mxCell>
+        <mxCell id="mf3" parent="1" style="shape=mxgraph.eip.message_filter;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=9;fontColor=#000000;" value="Message&lt;br&gt;Filter&lt;br&gt;&lt;i&gt;(Region)&lt;/i&gt;" vertex="1">
+          <mxGeometry height="55" width="80" x="750" y="507" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_ds1_mf1" edge="1" parent="1" source="ds1" style="edgeStyle=orthogonalEdgeStyle;fontColor=#000000;" target="mf1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_ds2_mf2" edge="1" parent="1" source="ds2" style="edgeStyle=orthogonalEdgeStyle;fontColor=#000000;" target="mf2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_ds3_mf3" edge="1" parent="1" source="ds3" style="edgeStyle=orthogonalEdgeStyle;fontColor=#000000;" target="mf3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="client1" parent="1" style="shape=mxgraph.eip.messageEndpoint;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;fontColor=#000000;" value="Client App 1&lt;br&gt;&lt;i&gt;(Endpoint)&lt;/i&gt;" vertex="1">
+          <mxGeometry height="55" width="100" x="880" y="347" as="geometry" />
+        </mxCell>
+        <mxCell id="client2" parent="1" style="shape=mxgraph.eip.messageEndpoint;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;fontColor=#000000;" value="Client App 2&lt;br&gt;&lt;i&gt;(Endpoint)&lt;/i&gt;" vertex="1">
+          <mxGeometry height="55" width="100" x="880" y="427" as="geometry" />
+        </mxCell>
+        <mxCell id="client3" parent="1" style="shape=mxgraph.eip.messageEndpoint;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;fontColor=#000000;" value="Client App n&lt;br&gt;&lt;i&gt;(Endpoint)&lt;/i&gt;" vertex="1">
+          <mxGeometry height="55" width="100" x="880" y="507" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_mf1_c1" edge="1" parent="1" source="mf1" style="edgeStyle=orthogonalEdgeStyle;fontColor=#000000;" target="client1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_mf2_c2" edge="1" parent="1" source="mf2" style="edgeStyle=orthogonalEdgeStyle;fontColor=#000000;" target="client2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_mf3_c3" edge="1" parent="1" source="mf3" style="edgeStyle=orthogonalEdgeStyle;fontColor=#000000;" target="client3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="queue_req" parent="1" style="shape=mxgraph.eip.dataChannel;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=9;labelPosition=center;verticalLabelPosition=bottom;align=center;verticalAlign=top;fontColor=#FFFFFF;" value="Queue&lt;br&gt;&lt;b&gt;dispo.jobs.&lt;br&gt;requestAssignment&lt;/b&gt;" vertex="1">
+          <mxGeometry height="70" width="140" x="1085" y="592" as="geometry" />
+        </mxCell>
+        <mxCell id="msg_request" parent="1" style="shape=mxgraph.eip.message;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=8;fontColor=#000000;" value="Job&lt;br&gt;Request&lt;br&gt;Message" vertex="1">
+          <mxGeometry height="40" width="55" x="902.5" y="607" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_c1_queue" edge="1" parent="1" source="client1" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontColor=#000000;" target="msg_request">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_c2_queue" edge="1" parent="1" source="client2" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontColor=#000000;" target="msg_request">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_c3_queue" edge="1" parent="1" source="client3" style="edgeStyle=orthogonalEdgeStyle;exitX=0.5;exitY=1;entryX=0.5;entryY=0;fontColor=#000000;" target="msg_request">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_msg_queue" edge="1" parent="1" source="msg_request" style="edgeStyle=orthogonalEdgeStyle;fontColor=#000000;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1088" y="627" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="comp_cons" parent="1" style="shape=mxgraph.eip.competingConsumers;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;fontColor=#000000;" value="Competing&lt;br&gt;Consumers" vertex="1">
+          <mxGeometry height="60" width="100" x="1480" y="424" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_queue_cc" edge="1" parent="1" source="queue_req" style="edgeStyle=orthogonalEdgeStyle;fontColor=#000000;exitX=0.964;exitY=0.499;exitDx=0;exitDy=0;exitPerimeter=0;" target="comp_cons">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1225" y="627" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="dispo" parent="1" style="shape=mxgraph.eip.messageEndpoint;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;fontColor=#000000;" value="Disposition&lt;br&gt;&lt;i&gt;(Endpoint)&lt;/i&gt;" vertex="1">
+          <mxGeometry height="60" width="100" x="1340" y="424" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_cc_dispo" edge="1" parent="1" source="comp_cons" style="edgeStyle=orthogonalEdgeStyle;fontColor=#000000;" target="dispo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kDhN_aGwa5H9JqQ8UW2V-1" edge="1" parent="1" source="topic_assign" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;curved=1;" target="client1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kDhN_aGwa5H9JqQ8UW2V-2" edge="1" parent="1" source="topic_assign" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;curved=1;" target="client2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="kDhN_aGwa5H9JqQ8UW2V-3" edge="1" parent="1" source="topic_assign" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;curved=1;" target="client3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="topic_assign" parent="1" style="shape=mxgraph.eip.publish_subscribe_channel;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;fontColor=#000000;" value="Topic&lt;br&gt;&lt;b&gt;dispo.jobs.&lt;br&gt;assignments&lt;/b&gt;" vertex="1">
+          <mxGeometry height="70" width="130" x="1090" y="419.5" as="geometry" />
+        </mxCell>
+        <mxCell id="kDhN_aGwa5H9JqQ8UW2V-7" edge="1" parent="1" source="msg_assign" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="topic_assign">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="msg_assign" parent="1" style="shape=mxgraph.eip.message;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=8;fontColor=#000000;" value="Job&lt;br&gt;Assignment&lt;br&gt;Message" vertex="1">
+          <mxGeometry height="40" width="55" x="1250" y="434" as="geometry" />
+        </mxCell>
+        <mxCell id="edge_dispo_msg" edge="1" parent="1" source="dispo" style="edgeStyle=orthogonalEdgeStyle;fontColor=#000000;" target="msg_assign">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
