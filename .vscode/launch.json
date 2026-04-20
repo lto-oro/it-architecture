@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Case3ClientAppApplication",
+            "request": "launch",
+            "mainClass": "ch.fhnw.digi.mockups.case3.client.Case3ClientAppApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
             "name": "Case2Application",
             "request": "launch",
             "mainClass": "com.group4.case2.Case2Application",

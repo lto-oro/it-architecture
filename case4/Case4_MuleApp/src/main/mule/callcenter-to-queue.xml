@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+      xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+      xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+        http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+        http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+    <!--
+       Case 4 - Teil 1 + Teil 2 (Gruppe 4)
+       ===================================
+       Scheduler -> SOAP (getNewJobs) -> Transform (Job-Liste) -> ForEach ->
+            Transform (Job -> JSON) -> Choice (type) -> JMS Publish
+    -->
+    <flow name="callcenter-to-queue-flow" doc:name="Callcenter -&gt; ActiveMQ">
+
+        <!-- 1) Periodisches Polling, Frequenz aus application.properties. -->
+        <scheduler doc:name="Poll Callcenter">
+            <scheduling-strategy>
+                <fixed-frequency frequency="${cc.poll.frequency}" timeUnit="SECONDS"/>
+            </scheduling-strategy>
+        </scheduler>
+
+        <!-- 2) SOAP-Aufruf getNewJobs (Service liefert 2 Jobs pro Call). -->
+        <wsc:consume config-ref="callcenter-soap-config" operation="getNewJobs" doc:name="getNewJobs"/>
+
+        <!-- 3) SOAP-Body -> Java-Liste der Jobs.
+                Descendants-Selector '..*job' ist namespace-agnostisch und
+                robust gegen WSC-Response-Wrapping-Unterschiede. -->
+        <ee:transform doc:name="SOAP body -&gt; Job list">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+(payload..*job default []) as Array]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <!-- 4) Pro Job: Transform + Routing + Publish. -->
+        <foreach collection="#[payload]" doc:name="For each Job">
+
+            <!-- 4a) Job-XML -> JobMessage-kompatibles JSON.
+                     Feldnamen und Typen entsprechen JobMessage.java;
+                     'type' bleibt als String 'Maintanence' / 'Repair',
+                     Jackson mappt ihn beim Client auf das Enum.
+                     Hinweis: In DataWeave 2.0 ist 'type' ein Schluesselwort,
+                     daher muss es als "type" gequotet werden - sowohl beim
+                     Lesen (payload."type") als auch beim Schreiben. -->
+            <ee:transform doc:name="Job -&gt; JobMessage JSON">
+                <ee:message>
+                    <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    jobnumber:         payload.jobnumber         as String,
+    customernumber:    payload.customernumber    as String,
+    description:       payload.description       as String,
+    region:            payload.region            as String,
+    scheduledDateTime: payload.scheduledDateTime as String,
+    "type":            payload."type"            as String
+}]]></ee:set-payload>
+                </ee:message>
+            </ee:transform>
+
+            <!-- 4b) Content-Based Routing nach Auftragstyp.
+                     Repair      -> dringend     -> Dispositionsabteilung
+                     Maintanence -> Routine      -> Aussendienst
+                     (Begruendung: case3-3.pdf, Kap. 1.) -->
+            <choice doc:name="Route by type">
+                <when expression='#[payload."type" == "Repair"]'>
+                    <logger level="INFO" category="case4.router"
+                            message='#["[REPAIR -> " ++ "${queue.urgent}" ++ "] " ++ write(payload, "application/json")]'/>
+                    <jms:publish config-ref="activemq-config" destination="${queue.urgent}"
+                                 doc:name="Publish Repair">
+                        <jms:message>
+                            <jms:body>#[output application/json --- payload]</jms:body>
+                            <jms:properties>#[{"_type": p('jms.type.property')}]</jms:properties>
+                        </jms:message>
+                    </jms:publish>
+                </when>
+                <otherwise>
+                    <logger level="INFO" category="case4.router"
+                            message='#["[MAINTANENCE -> " ++ "${queue.new}" ++ "] " ++ write(payload, "application/json")]'/>
+                    <jms:publish config-ref="activemq-config" destination="${queue.new}"
+                                 doc:name="Publish Maintanence">
+                        <jms:message>
+                            <jms:body>#[output application/json --- payload]</jms:body>
+                            <jms:properties>#[{"_type": p('jms.type.property')}]</jms:properties>
+                        </jms:message>
+                    </jms:publish>
+                </otherwise>
+            </choice>
+
+        </foreach>
+
+    </flow>
+
+</mule>

@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<xs:schema xmlns:tns="http://callcenter.case4.mockups.digi.fhnw.ch/" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="1.0" targetNamespace="http://callcenter.case4.mockups.digi.fhnw.ch/">
+  <xs:element name="currentJobs" type="tns:jobListReply"/>
+  <xs:element name="getNewJobs" type="tns:getNewJobs"/>
+  <xs:element name="getNewJobsResponse" type="tns:getNewJobsResponse"/>
+  <xs:complexType name="getNewJobs">
+    <xs:sequence/>
+  </xs:complexType>
+  <xs:complexType name="getNewJobsResponse">
+    <xs:sequence>
+      <xs:element name="return" type="tns:jobListReply" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="jobListReply">
+    <xs:sequence>
+      <xs:element name="job" type="tns:jobMessage" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="jobMessage">
+    <xs:sequence>
+      <xs:element name="customernumber" type="xs:string" minOccurs="0"/>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+      <xs:element name="jobnumber" type="xs:string" minOccurs="0"/>
+      <xs:element name="region" type="xs:string" minOccurs="0"/>
+      <xs:element name="scheduledDateTime" type="xs:string" minOccurs="0"/>
+      <xs:element name="type" type="tns:jobType" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:simpleType name="jobType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Maintanence"/>
+      <xs:enumeration value="Repair"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>

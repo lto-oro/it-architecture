@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<definitions xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+             xmlns:wsp="http://www.w3.org/ns/ws-policy"
+             xmlns:wsp1_2="http://schemas.xmlsoap.org/ws/2004/09/policy"
+             xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
+             xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+             xmlns:tns="http://callcenter.case4.mockups.digi.fhnw.ch/"
+             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+             xmlns="http://schemas.xmlsoap.org/wsdl/"
+             targetNamespace="http://callcenter.case4.mockups.digi.fhnw.ch/"
+             name="CallCenterPortImplService">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://callcenter.case4.mockups.digi.fhnw.ch/" schemaLocation="cc.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="getNewJobs">
+    <part name="parameters" element="tns:getNewJobs"/>
+  </message>
+  <message name="getNewJobsResponse">
+    <part name="parameters" element="tns:getNewJobsResponse"/>
+  </message>
+  <portType name="CallCenterPortImpl">
+    <operation name="getNewJobs">
+      <input wsam:Action="http://callcenter.case4.mockups.digi.fhnw.ch/CallCenterPortImpl/getNewJobsRequest" message="tns:getNewJobs"/>
+      <output wsam:Action="http://callcenter.case4.mockups.digi.fhnw.ch/CallCenterPortImpl/getNewJobsResponse" message="tns:getNewJobsResponse"/>
+    </operation>
+  </portType>
+  <binding name="CallCenterPortImplPortBinding" type="tns:CallCenterPortImpl">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+    <operation name="getNewJobs">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="CallCenterPortImplService">
+    <port name="CallCenterPortImplPort" binding="tns:CallCenterPortImplPortBinding">
+      <soap:address location="http://192.168.111.9:9090/service/cc"/>
+    </port>
+  </service>
+</definitions>

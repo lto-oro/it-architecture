@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc"
+      xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/wsc/current/mule-wsc.xsd
+        http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+
+    <!-- Externe Konfigurationsdatei laden (application.properties). -->
+    <configuration-properties file="application.properties"/>
+
+    <!-- Web Service Consumer fuer den Callcenter-SOAP-Service.
+         Die WSDL wird lokal aus src/main/resources/wsdl/cc.wsdl geladen,
+         die tatsaechliche Service-Adresse kommt aus den Properties. -->
+    <wsc:config name="callcenter-soap-config" doc:name="CallCenter SOAP Consumer">
+        <wsc:connection
+            wsdlLocation="wsdl/cc.wsdl"
+            service="CallCenterPortImplService"
+            port="CallCenterPortImplPort"
+            address="${cc.service.address}"/>
+    </wsc:config>
+
+    <!-- Gemeinsame ActiveMQ-Verbindung fuer beide JMS-Publish-Endpoints. -->
+    <jms:config name="activemq-config" doc:name="ActiveMQ Broker">
+        <jms:active-mq-connection username="${activemq.user}" password="${activemq.password}">
+            <jms:factory-configuration brokerUrl="${activemq.broker-url}"/>
+        </jms:active-mq-connection>
+    </jms:config>
+
+</mule>
