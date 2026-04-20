@@ -1,10 +1,23 @@
 # Case 4 — Enterprise Service Bus: Analyse und Lösungskonzept
 
 Modul: FHNW Software Architecture, FS26 (Marc Schaaf, marc.schaaf@fhnw.ch)
-Gruppe: **Gruppe 4** (Roberto Panizza, Loris Trifoglio — bestätigt über Case-3-Artefakte; der Dateiname `group_10.conf` ist irreführend und bezeichnet lediglich die VPN-Config-Nummer).
+Gruppe: **Gruppe 4** — Loris Trifoglio (Moderator), Roberto Panizza (Schriftführer), Piracintha Alfred.
+(Der Dateiname `../group_10.conf` ist irreführend — er bezeichnet nur die VPN-Config-Nummer, nicht die Gruppe.)
 Grundlagen Case 4: [case_4.pdf](case_4.pdf), [Hinweise_umsetzung.pdf](Hinweise_umsetzung.pdf), [Hinweise_Umsetzung.md](Hinweise_Umsetzung.md), [Enterprise_Service_Bus_An_overview.pdf](Enterprise_Service_Bus_An_overview.pdf)
 Modulweite Grundlagen: [../Modulübersicht.pdf](../Modulübersicht.pdf), [../System Overview.png](../System%20Overview.png)
-Case-3-Artefakte (unsere bestehende Lösung, Vorgänger von Case 4): [../Case3_Abgabe/EIP_Loesungskonzept.drawio.png](../Case3_Abgabe/EIP_Loesungskonzept.drawio.png), [../Case3_ClientApp/](../Case3_ClientApp/) (Spring-Boot-Client mit JMS + Jackson)
+Case-3-Grundlagen (Vorgänger und fachliche Basis von Case 4): [../case3/case3-3.pdf](../case3/case3-3.pdf), [../Case3_Abgabe/EIP_Loesungskonzept.drawio.png](../Case3_Abgabe/EIP_Loesungskonzept.drawio.png), [../Case3_ClientApp/](../Case3_ClientApp/) (Spring-Boot-Client mit JMS + Jackson)
+
+---
+
+## 0. Entscheidungen (finalisiert nach Case-3-Rückblick)
+
+| # | Frage | Entscheidung | Begründung |
+| --- | --- | --- | --- |
+| E1 | Routing-Kriterium Teil 2 | `type == Repair` → `group4.jobs.urgent` (Dispositionsabteilung), `type == Maintanence` → `group4.jobs.new` (Aussendienst) | Case 3 Kap. 1 schreibt genau diese Trennung vor (Repair = dringend, direkt koordiniert; Maintanence = Routine, publiziert). Der ESB automatisiert hier die manuelle Weiche aus Case 3. |
+| E2 | Umfang des Durchstichs | **Beide Teile** (Teil 1 + Teil 2) in einem einzigen Mule-Flow | Teil 2 ist mit Choice Router geringer Zusatzaufwand und vervollständigt das Case-3-Konzept. |
+| E3 | Case-3-Client-Anpassung | Client auf Queue `group4.jobs.new` umstellen (Destination + `setPubSubDomain(false)`) | Minimaler Eingriff, dafür vollständige End-to-End-Demo im Video. |
+| E4 | Ablage im Repo | Neuer Top-Level-Ordner `../Case4_MuleApp/` (parallel zu `../Case3_ClientApp/`) | Analogie-Prinzip mit Case 3; trennt Mule-Artefakte sauber vom Konzept-Ordner `case4/`. |
+| E5 | Rollen | Moderator: Loris Trifoglio — Schriftführer: Roberto Panizza — Mitglied: Piracintha Alfred | Gruppenentscheid. |
 
 ---
 
@@ -19,14 +32,15 @@ Case-3-Artefakte (unsere bestehende Lösung, Vorgänger von Case 4): [../Case3_A
 - F1.3 Endpunkt: `http://192.168.111.9:9090/service/cc` (WSDL unter `?WSDL`, XSD unter `?xsd=1`). Zugriff nur via WireGuard-VPN.
 - F1.4 Die abgerufenen Jobs müssen an den bestehenden ActiveMQ-Broker aus Case 3 weitergegeben werden.
 - F1.5 Ziel-Destination ist eine gruppenspezifische Queue `groupX.jobs.new` (nicht mehr das Topic `dispo.jobs.new` aus Case 3).
-- F1.6 Jede empfangene Job-Nachricht enthält mindestens: `customernumber`, `jobnumber`, `description`, `region`, `scheduledDateTime`, `type` (Werte laut Beispiel: `Maintenance`, `Repair`). Diese Felder müssen im weitergereichten Payload erhalten bleiben.
+- F1.6 Jede empfangene Job-Nachricht enthält mindestens: `customernumber`, `jobnumber`, `description`, `region`, `scheduledDateTime`, `type` (Werte serverseitig: `Maintanence`, `Repair` — bewusst so geschrieben, einheitlich in WSDL/XSD und Case-3-Client). Diese Felder müssen im weitergereichten Payload erhalten bleiben.
 - F1.7 Der Abruf erfolgt periodisch (Polling) — der Service bietet keine Push-Schnittstelle.
 
-**Teil 2 — Message Routing (Umsetzung optional, einer von Teil 1 oder 2 als Durchstich)**
+**Teil 2 — Message Routing (laut E2 mit umgesetzt)**
 
-- F2.1 Dringende Aufträge sollen von Routineaufträgen getrennt und an unterschiedliche Ziele geroutet werden (konzeptionell in Case 3 vorgesehen, dort nicht umgesetzt).
+- F2.1 Dringende Aufträge (`Repair`) sollen von Routineaufträgen (`Maintanence`) getrennt und an unterschiedliche Ziele geroutet werden (konzeptionell in Case 3 vorgesehen, dort manuell erledigt).
 - F2.2 Entscheidung inhaltsbasiert (Content-Based Routing) über den Mulesoft Choice Router.
-- F2.3 Kriterium für „dringend" vs. „routine" ist nicht explizit definiert → **offene Frage / Annahme**: nutzbar erscheint das Feld `type` (`Repair` = dringend, `Maintenance` = routine) oder `scheduledDateTime` (nahe Fälligkeit = dringend).
+- F2.3 Kriterium für „dringend" vs. „routine": Feld `type`. Belegt durch [case3-3.pdf](../case3/case3-3.pdf) Kap. 1 — „Dringender Reparaturauftrag: Die Dispositionsabteilung koordiniert den Einsatz direkt. […] Routineauftrag: Die Dispositionsabteilung publiziert den Auftrag an die Aussendienstmitarbeitenden."
+- F2.4 Routing-Ziele: `Repair` → Queue `group4.jobs.urgent` (Dispositionsabteilung, direkte Koordination bleibt in Case 3/4 out of scope), `Maintanence` → Queue `group4.jobs.new` (Aussendienst).
 
 **Teil 3 — Stabilität von Service-Adressen (nur Konzept, keine Umsetzung)**
 
@@ -69,13 +83,14 @@ Unsere Case-3-Implementierung ([Case3_ClientApp](../Case3_ClientApp/), [EIP_Loes
 
 - **Nachrichtenformat (kritisch für Kompatibilität)**: JMS `TextMessage` mit JSON-Body, serialisiert via `MappingJackson2MessageConverter` mit `_type`-Property als Typ-Indikator (siehe [MessageReceiver.java](../Case3_ClientApp/src/main/java/ch/fhnw/digi/mockups/case3/client/MessageReceiver.java)). Der Mule-Flow in Case 4 muss dasselbe Format erzeugen, sonst kann der bestehende Client die Nachrichten nicht deserialisieren.
 - **Job-Datenstruktur** (aus [JobMessage.java](../Case3_ClientApp/src/main/java/ch/fhnw/digi/mockups/case3/JobMessage.java)): `jobnumber`, `customernumber`, `description`, `region`, `scheduledDateTime` (String), `type` (Enum).
-- **Enum-Werte für `type`**: Case-3-POJO verwendet `Maintanence` (Schreibfehler im Code!) und `Repair`. **Offene Frage**: liefert der Callcenter-WSDL diesen Typo ebenfalls oder korrekt `Maintenance`? → im Transform Message des Flows ggf. normalisieren.
+- **Enum-Werte für `type`**: `Maintanence` und `Repair`. Diese Schreibweise ist serverseitig (Callcenter-Service, WSDL/XSD) und clientseitig (Case-3-POJO) identisch — also die kanonische Form im System, keine Normalisierung nötig.
 - **EIP-Pattern in Case 3** bereits konzipiert:
   - Content-Based Router (Auftragstyp): `Repair` → „Direkte Koordination (out of scope)"; `Maintanence` → Topic `dispo.jobs.new`.
   - Topic → Durable Subscribers → Message Filter (Region) → Client Apps.
   - Job-Anforderung über Queue `dispo.jobs.requestAssignment` (Competing Consumers → Disposition).
   - Zuweisungs-Rückkanal über Topic `dispo.jobs.assignments`.
 - Die **manuelle Schnittstelle** war genau der Schritt `Callcenter → Topic dispo.jobs.new` — also der Punkt, den Case 4 Teil 1 automatisiert.
+- **Wörtliche Prozessvorgabe aus [case3-3.pdf](../case3/case3-3.pdf) Kap. 1**: „*Dringender Reparaturauftrag: Die Dispositionsabteilung koordiniert den Einsatz direkt.*" / „*Routineauftrag: Die Dispositionsabteilung publiziert den Auftrag an die Aussendienstmitarbeitenden.*" — das ist 1:1 die Logik, die der Choice Router in Teil 2 automatisiert.
 
 ### Relevanz von Case 3 für Case 4 (konsolidiert)
 
@@ -108,12 +123,12 @@ Gesamtnote = Gruppennote Präsentation + individuelle Note Verteidigung + Gruppe
 
 ### Annahmen (bewusst markiert, weil nicht im Case-Text)
 
-- A1 Der Callcenter-Service ist zustandslos bezüglich bereits abgerufener Jobs — jeder `getNewJobs`-Aufruf liefert schlicht „die nächsten zwei Jobs" (keine ID-basierte Deduplizierung auf Clientseite notwendig). **Offen** — falls der Service Jobs mehrfach liefert, wäre Idempotenz clientseitig nötig.
-- A2 Das Schlüsselfeld für Dringlichkeit in Teil 2 ist `type` (`Repair` = dringend, `Maintanence` = routine). Durch unsere Case-3-Lösung gestützt, dort explizit als CBR-Kriterium modelliert.
-- A3 Die Zielqueue heisst `group4.jobs.new`. Für „dringende" Routes in Teil 2 wäre `group4.jobs.urgent` eine plausible Konvention. **Offen** — zweite Queue nicht explizit vorgegeben.
-- A4 Die Polling-Frequenz wird pragmatisch gewählt (z. B. alle 30–60 s im Dev-Durchstich). **Offen** — nicht spezifiziert. *Hinweis*: Der Case-3-JobGenerator publiziert laut Kommentar „alle 2 Sekunden" — für uns ist das nicht relevant, aber zeigt, dass höhere Frequenzen toleriert werden.
-- A5 Nachrichtenformat ist **JMS TextMessage mit JSON-Body und `_type`-Property**, strukturell identisch zum `JobMessage`-POJO aus [Case3_ClientApp](../Case3_ClientApp/). Bestätigt durch die Case-3-Implementierung — das ist nicht mehr Wahl, sondern Kompatibilitäts­pflicht, falls die bestehende Client-App ohne Anpassung weiter konsumieren soll.
-- A6 Das Enum-Feld `type` wird mit der exakten Schreibweise aus dem Case-3-POJO (`Maintanence` inkl. Typo, `Repair`) publiziert. **Offen** — Schreibweise im WSDL/XSD ist noch zu verifizieren; bei Abweichung im Transform Message normalisieren.
+- A1 Der Callcenter-Service ist zustandslos bezüglich bereits abgerufener Jobs — jeder `getNewJobs`-Aufruf liefert „die nächsten zwei Jobs". Entscheidung: keine clientseitige Deduplizierung (einfachste Lösung); mögliche Duplikate sind für den Durchstich unkritisch.
+- A2 Dringlichkeits-Feld ist `type` (siehe F2.3, durch [case3-3.pdf](../case3/case3-3.pdf) Kap. 1 belegt, nicht mehr Annahme).
+- A3 Queue-Naming-Konvention: `group4.jobs.new` (vorgegeben) und `group4.jobs.urgent` (analoge Konvention für den dringenden Zweig — mit Coach bestätigen, falls Unsicherheit).
+- A4 Polling-Frequenz: 60 s als Default. Pragmatisch für Dev-Demo ausreichend.
+- A5 Nachrichtenformat: **JMS TextMessage mit JSON-Body und `_type`-Property**, strukturell identisch zum `JobMessage`-POJO aus [Case3_ClientApp](../Case3_ClientApp/). Belegt durch Case-3-Code — Kompatibilitäts­pflicht, da der bestehende Client laut E3 unverändert das Format erwartet.
+- A6 Das Enum-Feld `type` wird mit der kanonischen Schreibweise `Maintanence` / `Repair` durchgereicht — serverseitig und clientseitig einheitlich, keine Normalisierung nötig.
 
 ### Abgrenzungen
 
@@ -132,13 +147,13 @@ Gesamtnote = Gruppennote Präsentation + individuelle Note Verteidigung + Gruppe
 2. Verständnis von Web-Services / WSDLs.
 3. Zusammenspiel von Service- und Message-orientierten Ansätzen im ESB.
 
-Daraus folgt für die Umsetzung:
+Daraus folgt für die Umsetzung (entsprechend Entscheidungen E1–E5):
 
-- **Teil 1 ist der sinnvollste Durchstich**, weil er beide Welten (SOAP-Service *und* JMS-Queue) im ESB zusammenführt und damit genau das Lernziel 3 adressiert. Teil 2 allein (Choice Router) deckt nur eine einzelne ESB-Primitive ab.
-- **Alle benötigten Mule-Bausteine sind in `Hinweise_umsetzung.pdf` vorgemerkt**: Scheduler, Service Consumer, Transform Message, For Each, JMS Publish, Choice Router. Die Lösung lässt sich 1:1 aus diesen Komponenten zusammenstecken — kein Eigenbau nötig.
-- **Kein Overengineering**: weder Registry, Orchestrator, BPEL, Security-Layer noch UDDI sind für die Aufgabe erforderlich. Sie sind im ESB-Paper als *extended*-Features erwähnt und können bestenfalls als Einordnung im Teil-3-Konzept genannt werden.
-- **Teil 2 lässt sich kostengünstig mitnehmen**, indem der Choice Router direkt in denselben Mule-Flow eingeschoben wird. Dann deckt ein einziger Flow beide Pflichtteile ab. Das ist die ökonomische Wahl, sofern die Zeit reicht.
-- **Teil 3 wird konzeptuell über zwei klassische ESB-Ideen gelöst**: (a) Service-Virtualisierung / Proxy-Endpoints im ESB, (b) optional eine zentrale Service-Registry. Beides wird in den bereitgestellten Quellen direkt adressiert.
+- **Teil 1 und Teil 2 werden gemeinsam** in einem einzigen Mule-Flow umgesetzt (E2). Teil 1 allein adressiert zwar Lernziel 3 (SOA ↔ MOM), Teil 2 ist aber mit einem einzigen Choice Router zusätzlich machbar und vervollständigt das Case-3-Konzept ohne Mehraufwand.
+- **Alle benötigten Mule-Bausteine sind in `Hinweise_umsetzung.pdf` vorgemerkt**: Scheduler, Service Consumer, Transform Message, For Each, Choice Router, JMS Publish. Die Lösung lässt sich 1:1 aus diesen Komponenten zusammenstecken — kein Eigenbau nötig.
+- **Kein Overengineering**: weder Registry, Orchestrator, BPEL, Security-Layer noch UDDI sind für die Aufgabe erforderlich. Sie sind im ESB-Paper als *extended*-Features erwähnt und werden höchstens im Teil-3-Konzept eingeordnet.
+- **Case-3-Client (Spring-Boot) wird minimal angepasst**, um den Durchstich end-to-end demonstrieren zu können (E3): Destination wechselt von Topic `dispo.jobs.new` auf Queue `group4.jobs.new`, Container-Factory von `PubSubDomain=true` auf `false`. Formatkompatibilität ist durch den Jackson-Converter automatisch gegeben, solange der Mule-Flow JSON publiziert.
+- **Teil 3 wird konzeptuell über zwei klassische ESB-Ideen gelöst**: (a) Service-Virtualisierung / Proxy-Endpoints im ESB, (b) optional eine zentrale Service-Registry. Beides ist in den bereitgestellten Quellen direkt adressiert.
 
 ---
 
@@ -170,12 +185,12 @@ Ein einziger Flow, sequenziell:
 
 1. **Scheduler** — löst periodisch aus (z. B. alle 60 s, Wert offen).
 2. **Service Consumer (WSDL)** — ruft `getNewJobs` über die registrierte WSDL-URL auf. Der Consumer wird mit der WSDL aus `http://192.168.111.9:9090/service/cc?WSDL` konfiguriert; Mule generiert Datentypen automatisch.
-3. **Transform Message** — wandelt die SOAP-Response in das Case-3-kompatible JSON um (DataWeave, `output application/json`). Zielstruktur entspricht `JobMessage` aus [JobMessage.java](../Case3_ClientApp/src/main/java/ch/fhnw/digi/mockups/case3/JobMessage.java). `type`-Wert auf Case-3-Schreibweise normalisieren, falls nötig.
+3. **Transform Message** — wandelt die SOAP-Response in das Case-3-kompatible JSON um (DataWeave, `output application/json`). Zielstruktur entspricht `JobMessage` aus [JobMessage.java](../Case3_ClientApp/src/main/java/ch/fhnw/digi/mockups/case3/JobMessage.java). `type` wird 1:1 durchgereicht (`Maintanence` / `Repair`).
 4. **For Each** — iteriert über die im Response enthaltene Job-Liste (laut Beispiel 2 Jobs pro Aufruf).
 5. **Choice Router** (Teil 2) — routet pro Job:
-   - `type == 'Repair'` → Queue `group4.jobs.urgent` *(Annahme A3)*
-   - sonst → Queue `group4.jobs.new`
-6. **JMS Publish** — veröffentlicht die Nachricht auf der gewählten Queue. Connection Properties: `brokerUrl=tcp://192.168.111.6:61616`, `username=group4`, `password=Password4`. MessageType = `TEXT` (JSON-Body), optional `_type`-Property setzen, falls der Case-3-Client ohne Anpassung weiterkonsumieren soll.
+   - `type == 'Repair'` → Queue `group4.jobs.urgent` (dringend, Dispositionsabteilung)
+   - `type == 'Maintanence'` → Queue `group4.jobs.new` (Routine, Aussendienst)
+6. **JMS Publish** — veröffentlicht die Nachricht auf der gewählten Queue. Connection: `brokerUrl=tcp://192.168.111.6:61616`, `username=group4`, `password=Password4`. MessageType = `TEXT` (JSON-Body), `_type`-Property setzen (`ch.fhnw.digi.mockups.case3.JobMessage`), damit der Case-3-Jackson-Converter deserialisieren kann.
 
 ### 4.3 Konfiguration (Global Elements)
 
@@ -199,29 +214,29 @@ Ein einziger Flow, sequenziell:
 
 ## 5. Grobe Umsetzungsplanung
 
-| Schritt | Inhalt | Artefakt / Ergebnis |
-| --- | --- | --- |
-| 1 | VPN (WireGuard) mit `../group_10.conf` aktivieren, Erreichbarkeit prüfen: SOAP via SoapUI (`?WSDL`, `?xsd=1`), ActiveMQ via Webkonsole `http://192.168.111.6:8161`. | Beide Endpoints erreichbar. |
-| 2 | Anypoint Studio 7.17.0 installieren, neues Mule-Projekt `case4-callcenter-integration` anlegen. | Leeres Projekt. |
-| 3 | WSDL importieren, Web Service Consumer Config anlegen, `getNewJobs` testweise aufrufen. Dabei Schreibweise `Maintenance` vs. `Maintanence` aus XSD verifizieren (OP6). | SOAP-Consumer ruft Service erfolgreich ab; Typo-Status geklärt. |
-| 4 | JMS-Connector konfigurieren (`tcp://192.168.111.6:61616`, `group4`/`Password4`). Testnachricht manuell auf `group4.jobs.new` publizieren und z.B. mit `activemq-admin` oder einem JMS-Client gegenlesen. | Nachricht in ActiveMQ-Konsole sichtbar. |
-| 5 | DataWeave-Transformation schreiben, die SOAP-Response auf Case-3-JSON mappt (identisch zu [JobMessage.java](../Case3_ClientApp/src/main/java/ch/fhnw/digi/mockups/case3/JobMessage.java)). Unit-Test in Anypoint Studio mit statischem XML-Input. | Mapping korrekt. |
-| 6 | Flow zusammenstecken: Scheduler → Consumer → Transform → For Each → JMS Publish. Mit aktivem Case-3-Client verifizieren: Jobs erscheinen in dessen UI (ggf. Client auf Queue umstellen, siehe OP7). | End-to-End-Durchstich funktioniert. |
-| 7 | Teil 2: Choice Router einbauen, zweite Queue `group4.jobs.urgent` ergänzen, Routing-Kriterium `type == 'Repair'` dokumentieren. | Beide Queues erhalten gemäss Kriterium Nachrichten. |
-| 8 | Teil 3 als Konzeptkapitel ausarbeiten (Service-Virtualisierung + optionale Registry, inkl. Begründung). | Abschnitt in der Lösungsdokumentation. |
-| 9 | Lernfragen beantworten (ESB = Produkt oder Konzept?, SOA ↔ MOM im ESB, zielführender ESB-Einsatz). | Dokumentation. |
-| 10 | Phase-1-Protokoll finalisieren (durch Schriftführer). | Protokoll im Repo. |
-| 11 | Moderator lädt Artefakt-Paket (Lernfragen, Konzept, Umsetzung, Protokoll) auf Moodle hoch. | Abgabe erfolgt. |
-| 12 | Nur falls Case 4 uns als Präsentations- oder Verteidigungs-Case zugewiesen wird: Videopräsentation (15–25 Min) bzw. Verteidigungsvorbereitung (jede Person muss die gesamte Lösung verteidigen können). | Video / Bereitschaft. |
+Verantwortlichkeits-Kürzel: **L**=Loris, **R**=Roberto, **P**=Piracintha. Die eigentliche Arbeit wird paarweise/gemeinsam erledigt; die Kürzel markieren Lead.
+
+| # | Inhalt | Lead | Artefakt / Ergebnis |
+| --- | --- | --- | --- |
+| 1 | VPN (WireGuard) mit `../group_10.conf` aktivieren, Erreichbarkeit prüfen: SOAP via SoapUI (`?WSDL`, `?xsd=1`), ActiveMQ via Webkonsole `http://192.168.111.6:8161`. | alle | Beide Endpoints erreichbar. |
+| 2 | Anypoint Studio 7.17.0 installieren, Mule-Projekt im neuen Repo-Ordner `../Case4_MuleApp/` anlegen. | R | Leeres Projekt commitet. |
+| 3 | WSDL importieren, Web Service Consumer Config anlegen, `getNewJobs` testweise aufrufen. | R | SOAP-Consumer funktioniert. |
+| 4 | JMS-Connector konfigurieren (`tcp://192.168.111.6:61616`, `group4`/`Password4`). Testnachricht manuell auf `group4.jobs.new` publizieren und über ActiveMQ-Webkonsole gegenlesen. | P | Nachricht sichtbar. |
+| 5 | DataWeave-Transformation SOAP → Case-3-JSON (`JobMessage`-Struktur, `_type`-Property). Test mit statischem XML-Input in Anypoint Studio. | R | Mapping korrekt. |
+| 6 | Flow zusammenbauen: Scheduler → Service Consumer → Transform → For Each → Choice Router → JMS Publish (beide Queues). | R+P | Flow end-to-end lauffähig. |
+| 7 | Case-3-Client anpassen (E3): `MessageReceiver.receiveNewJob` auf Destination `group4.jobs.new` umstellen, neue `DefaultJmsListenerContainerFactory` mit `setPubSubDomain(false)` für Queues. Ggf. zweiter `@JmsListener` für `group4.jobs.urgent` zur Demo. | R | End-to-End-Demo sichtbar: Jobs erscheinen in UI. |
+| 8 | Teil 3 konzeptuell ausarbeiten (Service-Virtualisierung + optionale Registry). | L | Konzept-Abschnitt. |
+| 9 | Lernfragen beantworten: (a) ESB = Produkt oder Konzept? (b) Zielführender ESB-Einsatz? (c) SOA ↔ MOM im ESB? Jede Person schreibt eigenen Learning Report. | alle einzeln | Learning Reports + gruppenweite Antworten. |
+| 10 | Phase-1-Protokoll aus Gruppensitzung finalisieren (Vorlage auf Moodle). | R (Schriftführer) | Protokoll im Repo. |
+| 11 | Abgabepaket schnüren: Protokoll, Lernfragen-Antworten, dieses Konzept-Dokument, `Case4_MuleApp/` (Mule-Export), angepasster Case-3-Client. Upload auf Moodle. | L (Moderator) | Abgabe erfolgt. |
+| 12 | Falls Case 4 als Präsentations-/Verteidigungs-Case zugewiesen: Videopräsentation (15–25 Min, alle drei gleich verteilt) und Verteidigungs-Dry-Run — jede Person muss gesamte Lösung erklären können. | alle | Video / Bereitschaft. |
 
 ---
 
-## 6. Offene Punkte (zusammengefasst)
+## 6. Offene Punkte
 
-- OP1 **geklärt durch Case 3**: Nachrichtenformat = JMS TextMessage, JSON-Body passend zum `JobMessage`-POJO, `_type`-Property für den Case-3-Jackson-Converter.
-- OP2 **weitgehend geklärt durch Case 3**: Dringlichkeits-Kriterium ist `type` (`Repair` = dringend, `Maintanence` = routine). Nur zu bestätigen, dass wir beide Queues gewünscht haben — oder ob `Repair` weiterhin „out of scope" bleibt.
-- OP3 Queue-Naming für „urgent" (Annahme: `group4.jobs.urgent`) — ggf. mit Dozent abstimmen.
-- OP4 Polling-Intervall — frei wählbar, Default 60 s.
-- OP5 Idempotenz: unklar, ob der Service denselben Job mehrfach liefern kann.
-- OP6 Schreibweise von `type` im WSDL/XSD: `Maintenance` (korrekt) oder `Maintanence` (Case-3-Typo)? → bei WSDL-Import direkt verifizieren und im Transform Message ggf. auf Case-3-Schreibweise mappen.
-- OP7 Soll die alte Case-3-Client-App unverändert weiterlaufen? Falls ja, muss sie zusätzlich zur Queue `group4.jobs.new` (Point-to-Point, `setPubSubDomain(false)`) gewechselt werden — aktuell hört sie auf das Topic `dispo.jobs.new`.
+Keine verbleibenden Punkte — alle Fragen sind durch Kapitel 0 und die Case-3-Unterlagen geschlossen.
+
+Historisch bereinigt:
+- Queue-Name `group4.jobs.urgent` als Konvention akzeptiert (analog zu `group4.jobs.new`).
+- Idempotenz des Callcenter-Service: bewusst nicht adressiert — einfachste Lösung, keine clientseitige Deduplizierung. Mögliche Duplikate sind für den Durchstich unkritisch.
