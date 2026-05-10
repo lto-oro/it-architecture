@@ -1,1 +1,8 @@
+# macOS
+.DS_Store
+
+# Build artefacts (Case 5 Kafka-App)
+case5/Case5_KafkaApp/target/
+
+# Tools
 .npm-cache
