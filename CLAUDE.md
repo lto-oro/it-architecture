@@ -54,3 +54,19 @@ Bei Bedarf gezielt lesen — *nicht* alles vorab:
 - **Zwei Stages explizit gefordert** (Step-by-Step §3). Beide Stages dürfen technisch in derselben App laufen, das Konzept muss aber zwei EPAs zeigen.
 - **`delays`-Topic wird von allen Gruppen geteilt** — das Dashboard differenziert nicht. Eigene Zwischen-Topics zwingend mit `group4-` präfixieren.
 - **Microsoft Teams ist kein Kommunikationskanal zum Dozenten.** Fragen via E-Mail an `marc.schaaf@fhnw.ch` oder Coaching über Moodle.
+
+## Coordinator-Workaround (Stand 2026-05-10)
+
+Der FHNW-Broker `192.168.111.10:9092` liefert weiterhin keinen Group Coordinator (FindCoordinator → `errorCode = 15`, Kouncil zeigt keine Consumer-Groups). Wir umgehen das in [`Launcher.java`](case5/Case5_KafkaApp/src/main/java/Launcher.java) komplett: plain `KafkaConsumer` mit `assign(...)` statt `subscribe(...)`, kein `group.id`, `seekToEnd(...)` beim Start. Damit ist `__consumer_offsets` nicht im Pfad, die App konsumiert sauber.
+
+Konsequenzen, die das Konzept-Dokument widerspiegeln muss:
+
+- Kein Kafka-Streams-DSL — wir bauen die zwei EPAs als zwei eigene Threads in derselben JVM, verbunden über das Topic `group4-route-timing`. CEP-Konzept (zwei Stages, Topic-getrennt) ist erfüllt; nur die DSL fehlt.
+- Keine persistierten Offsets — bei jedem Start lesen wir ab *aktuellem* Topic-Ende. Alte Events (z.B. Position-Events vom Vortag) werden ignoriert, weil der REST-Backend deren Delivery-IDs ohnehin nicht mehr kennt (`/route/{id}` antwortet dann mit `ERROR: Delivery not found`, was [`Utils.requestDelay`](case5/Case5_KafkaApp/src/main/java/Utils.java) als Sentinel `-100000` behandelt; Stage 2 filtert das raus).
+
+**Verifikation der End-to-End-Strecke (sobald produziert):**
+
+1. Streams-App starten, Konsolen-Logs der beiden Stages erfassen.
+2. In Kouncil prüfen: Topic `group4-route-timing` füllt sich, Topic `delays` enthält unsere `id: …, delay: …`-Strings.
+3. Dashboard `http://192.168.111.11:8080/status/` öffnen, Screenshot ziehen.
+4. Logs + Screenshot in [`case5/Case5_Abgabe/Case-5_Dokumentation_Loris-Roberto-Piracintha.md`](case5/Case5_Abgabe/Case-5_Dokumentation_Loris-Roberto-Piracintha.md) an die mit `<KONSOLEN-LOG …>` / `<SCREENSHOT …>` markierten Platzhalter einsetzen, Datum in der Test-Sektion eintragen, Verifikations-Matrix-Zeile F7 von _ausstehend_ auf _erfüllt_ setzen.
