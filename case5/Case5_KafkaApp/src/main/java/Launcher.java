@@ -10,26 +10,6 @@ import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.processor.WallclockTimestampExtractor;
 
-/**
- * Case 5 - Driver Delay CEP (Group 4).
- *
- * Single-application 2-stage CEP (the dozent allows omitting the connecting
- * Kafka topic in the simplified variant; we still publish it so it is visible
- * in Kouncil and the EPN structure is preserved).
- *
- *   driver-position
- *        |
- *   [Stage 1 / EPA 1]  parse GPS, REST /route/{id}, format "id: X, delay: Y"
- *        |
- *        +--> group4-route-timing            (every RouteTiming event)
- *        |
- *   [Stage 2 / EPA 2]  filter delay > 180s
- *        |
- *        +--> delays                          (only SignificantDelay events)
- *
- * Output format on `delays` (consumed by dashboard at /status/):
- *   id: &lt;DeliveryID&gt;, delay: &lt;Sekunden&gt;
- */
 public class Launcher {
 
 	private static final String BOOTSTRAP_SERVERS = "192.168.111.10:9092";
@@ -47,7 +27,6 @@ public class Launcher {
 		props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 		props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
 		props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimestampExtractor.class);
-		// Replay all events on a fresh consumer group (each run uses a random APPLICATION_ID)
 		props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
 		final StreamsBuilder builder = new StreamsBuilder();
@@ -73,8 +52,7 @@ public class Launcher {
 		timings.to(INTERMEDIATE_TOPIC);
 
 		// ---------------- Stage 2: RouteTiming -> SignificantDelay --------------
-		// In-memory chain (no consumer on group4-route-timing) — the dozent allows
-		// dropping the connecting topic when both stages run in the same app.
+	
 		timings
 				.filter((k, v) -> {
 					Integer delay = Utils.extractDelay(v);
