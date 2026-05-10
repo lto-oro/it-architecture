@@ -3,7 +3,7 @@
 > Software Architecture, FHNW, FS26 — Dozent: Marc Schaaf
 > Quelle: `case_5.pdf`, `Materialien zu Umsetzung/`, `Startpunkte Selbststudium/`, `../Modulübersicht.pdf`
 
-Diese Datei ist die **vollständige Arbeitsgrundlage für Gruppe 10**: Sie fasst Szenario, Lernfragen, theoretische Grundlagen (Event/CEP), Beispiel-Lösungskonzept, Step-by-Step-Umsetzungsleitfaden, Systemumgebung und Abgabe-Checkliste zusammen.
+Diese Datei ist die **vollständige Arbeitsgrundlage für Gruppe 4**: Sie fasst Szenario, Lernfragen, theoretische Grundlagen (Event/CEP), Beispiel-Lösungskonzept, Step-by-Step-Umsetzungsleitfaden, Systemumgebung und Abgabe-Checkliste zusammen.
 
 ---
 
@@ -139,7 +139,7 @@ Der Dozent vereinfacht das Szenario für die Implementierung: **Wir tracken nur,
 - Entscheiden, ob die Verspätung signifikant genug ist, um den Kunden zu informieren
 - Dashboard für den Kundenservice mit verspäteten Fahrern (einfaches Dashboard ist bereitgestellt)
 
-**Sample Code:** vorkonfiguriertes Maven-Projekt unter [`Materialien zu Umsetzung/kafka_sample/`](Materialien%20zu%20Umsetzung/kafka_sample/) — alle Dependencies sind drin. **Empfehlung:** dort starten.
+**Sample Code:** vorkonfiguriertes Maven-Projekt unter [`Case5_KafkaApp/`](Case5_KafkaApp/) — alle Dependencies sind drin. **Empfehlung:** dort starten.
 
 **Hinweise des Dozenten:**
 
@@ -158,16 +158,16 @@ Der Dozent vereinfacht das Szenario für die Implementierung: **Wir tracken nur,
 - Definition des Event-Modells
 - Definition der benötigten Topics
 
-**Empfehlung für Gruppe 10 (Vorschlag, im Lösungskonzept zu begründen):**
+**Empfehlung für Gruppe 4 (Vorschlag, im Lösungskonzept zu begründen):**
 
 | Event-Typ | Bedeutung | Topic |
 |---|---|---|
 | `DriverPosition` | GPS-Update eines Fahrers (`id, time, lat, lon`) | `driver-position` (vom Stream-Generator gespeist) |
-| `RouteTiming` | Berechnete Verspätung in Sekunden zu einer Position | `group10-route-timing` |
+| `RouteTiming` | Berechnete Verspätung in Sekunden zu einer Position | `group4-route-timing` |
 | `SignificantDelay` | Verspätung > 3 min — für Dashboard | `delays` (festes Format `id: X, delay: Y`) |
 
-- **Stage 1 (EPA 1):** liest `driver-position` → ruft REST-Service `/route/ID` auf → publiziert `RouteTiming` auf `group10-route-timing`.
-- **Stage 2 (EPA 2):** liest `group10-route-timing` → filtert `delay > 180 Sekunden` → publiziert `SignificantDelay` auf `delays` (Format genau `id: 123, delay: 321`).
+- **Stage 1 (EPA 1):** liest `driver-position` → ruft REST-Service `/route/ID` auf → publiziert `RouteTiming` auf `group4-route-timing`.
+- **Stage 2 (EPA 2):** liest `group4-route-timing` → filtert `delay > 180 Sekunden` → publiziert `SignificantDelay` auf `delays` (Format genau `id: 123, delay: 321`).
 
 ### 4.3 Step 2 — Position-Stream lesen + Verspätung abfragen
 
@@ -176,14 +176,14 @@ Java-Programm mit Kafka Streams. Schritte:
 1. Verbindung zum Kafka-Broker: `192.168.111.10:9092`.
 2. Topic `driver-position` subscriben (Stream der GPS-Updates).
 3. Pro Event den REST-Service abfragen, um die Verspätung zu bekommen.
-4. Neues Event auf `groupXXXX-route-timing` publizieren — **für uns: `group10-route-timing`** (Topic-Präfix mit Gruppenname).
+4. Neues Event auf `groupXXXX-route-timing` publizieren — **für uns: `group4-route-timing`** (Topic-Präfix mit Gruppenname).
 
 ### 4.4 Step 3 — Signifikante Verspätung erkennen
 
 Zweite Kafka-Streams-App. Schritte:
 
 1. Verbindung zum Kafka-Broker.
-2. Topic `group10-route-timing` subscriben.
+2. Topic `group4-route-timing` subscriben.
 3. Verspätung > 3 min prüfen.
 4. Konsolen-Ausgabe für jeden Treffer.
 
@@ -198,7 +198,7 @@ Zweite Kafka-Streams-App. Schritte:
 
 ## 5 Datenformate, Endpoints, Utilities
 
-Quellen: Step-by-Step-Guide, [`Materialien zu Umsetzung/Utils.java`](Materialien%20zu%20Umsetzung/Utils.java) und [`Materialien zu Umsetzung/kafka_sample/src/main/java/Utils.java`](Materialien%20zu%20Umsetzung/kafka_sample/src/main/java/Utils.java) (identisch).
+Quellen: Step-by-Step-Guide, [`Materialien zu Umsetzung/Utils.java`](Materialien%20zu%20Umsetzung/Utils.java) und [`Case5_KafkaApp/src/main/java/Utils.java`](Case5_KafkaApp/src/main/java/Utils.java) (identisch).
 
 ### 5.1 Position-Update (Input)
 
@@ -224,7 +224,7 @@ Quellen: Step-by-Step-Guide, [`Materialien zu Umsetzung/Utils.java`](Materialien
 
 ### 5.4 Zwischen-Topic (frei benennbar)
 
-- **Topic:** `group10-route-timing` (Präfix mit Gruppenname zwingend, damit es zu keinen Kollisionen kommt).
+- **Topic:** `group4-route-timing` (Präfix mit Gruppenname zwingend, damit es zu keinen Kollisionen kommt).
 
 ---
 
@@ -248,24 +248,24 @@ Quellen: Step-by-Step-Guide, [`Materialien zu Umsetzung/Utils.java`](Materialien
 
 ### 6.3 Gruppen-Identifikation
 
-- **Gruppe:** **Gruppe 10** (siehe `group_10.conf`).
-- **Konsequenz:** Eigene Topics werden mit `group10-` präfixiert (z.B. `group10-route-timing`). Beispiel im Step-by-Step-Guide nutzt `group1234-` — das war ein Platzhalter.
+- **Gruppe:** **Gruppe 4** (siehe `group_10.conf`).
+- **Konsequenz:** Eigene Topics werden mit `group4-` präfixiert (z.B. `group4-route-timing`). Beispiel im Step-by-Step-Guide nutzt `group1234-` — das war ein Platzhalter.
 
 ---
 
-## 7 Sample-Code-Struktur (`Materialien zu Umsetzung/kafka_sample/`)
+## 7 Sample-Code-Struktur (`Case5_KafkaApp/`)
 
 Maven-Projekt — siehe `pom.xml`:
 
 - Kafka Streams `3.5.0`
 - SLF4J / reload4j
 
-Quellen unter [`Materialien zu Umsetzung/kafka_sample/src/main/java/`](Materialien%20zu%20Umsetzung/kafka_sample/src/main/java/):
+Quellen unter [`Case5_KafkaApp/src/main/java/`](Case5_KafkaApp/src/main/java/):
 
-- [`Launcher.java`](Materialien%20zu%20Umsetzung/kafka_sample/src/main/java/Launcher.java) — Boilerplate für Kafka Streams: Config, `StreamsBuilder`, Subscribe auf `driver-position`, Hookup von `MyProcessor` (Foreach) und `MyMapper` (KeyValue-Map), Publish auf `someOtherTopic`, Shutdown-Hook.
-- [`MyProcessor.java`](Materialien%20zu%20Umsetzung/kafka_sample/src/main/java/MyProcessor.java) — `ForeachAction<String,String>`: gibt jedes Event auf der Konsole aus.
-- [`MyMapper.java`](Materialien%20zu%20Umsetzung/kafka_sample/src/main/java/MyMapper.java) — `KeyValueMapper<String,String,KeyValue<String,String>>`: erzeugt aus jedem Event ein neues Event.
-- [`Utils.java`](Materialien%20zu%20Umsetzung/kafka_sample/src/main/java/Utils.java) — Helper (siehe §5).
+- [`Launcher.java`](Case5_KafkaApp/src/main/java/Launcher.java) — Boilerplate für Kafka Streams: Config, `StreamsBuilder`, Subscribe auf `driver-position`, Hookup von `MyProcessor` (Foreach) und `MyMapper` (KeyValue-Map), Publish auf `someOtherTopic`, Shutdown-Hook.
+- [`MyProcessor.java`](Case5_KafkaApp/src/main/java/MyProcessor.java) — `ForeachAction<String,String>`: gibt jedes Event auf der Konsole aus.
+- [`MyMapper.java`](Case5_KafkaApp/src/main/java/MyMapper.java) — `KeyValueMapper<String,String,KeyValue<String,String>>`: erzeugt aus jedem Event ein neues Event.
+- [`Utils.java`](Case5_KafkaApp/src/main/java/Utils.java) — Helper (siehe §5).
 - `src/main/resources/log4j.properties` — Logging-Konfiguration.
 
 **Kafka-Streams-Setup-Eckpunkte (aus `Launcher.java`):**
@@ -281,14 +281,14 @@ props.put(StreamsConfig.DEFAULT_TIMESTAMP_EXTRACTOR_CLASS_CONFIG, WallclockTimes
 **Build & Run:**
 
 ```bash
-cd "Materialien zu Umsetzung/kafka_sample"
+cd Case5_KafkaApp
 mvn -DskipTests package
 mvn exec:java -Dexec.mainClass=Launcher   # oder via IDE
 ```
 
 (VPN muss aktiv sein, sonst hängt die Connection.)
 
-> ⚠️ Die `Utils.java` auf der obersten Ebene des Materialordners hat `package kafka_streams;` — die Variante im `kafka_sample/`-Default-Package nicht. Bei eigener Implementation auf konsistente Packages achten.
+> ⚠️ Die `Utils.java` auf der obersten Ebene des Materialordners hat `package kafka_streams;` — die Variante im `Case5_KafkaApp/`-Default-Package nicht. Bei eigener Implementation auf konsistente Packages achten.
 
 ---
 
@@ -331,14 +331,14 @@ Wir folgen dem **Design-oriented Problem-Based Learning** mit 4 Phasen:
 
 ---
 
-## 9 Konkrete Definition-of-Done für Case 5 (Gruppe 10)
+## 9 Konkrete Definition-of-Done für Case 5 (Gruppe 4)
 
 - [ ] **Phase-1-Protokoll** mit Lernfragen abgegeben (Moderator/Schriftführer benannt).
 - [ ] **Antworten auf die drei Pflicht-Lernfragen** (Event vs. Nachricht, Event Processing vs. Messaging, CEP vs. EP) + eigene Lernfragen, mit Quellenangaben.
 - [ ] **Lösungskonzept**: Event-Modell, 2-Stage-CEP-Flow, Topic-Architektur, Begründung — orientiert am Beispielkonzept aus §3, adaptiert auf Driver-Delay aus §4.
 - [ ] **Lösungsumsetzung** (Java/Kafka Streams):
-  - [ ] Stage 1 liest `driver-position`, ruft REST `…/route/ID` (URL-encoded `time`) auf, publiziert `RouteTiming` auf `group10-route-timing`.
-  - [ ] Stage 2 liest `group10-route-timing`, filtert `delay > 180 s`, publiziert ins `delays`-Topic im Format **`id: 123, delay: 321`**.
+  - [ ] Stage 1 liest `driver-position`, ruft REST `…/route/ID` (URL-encoded `time`) auf, publiziert `RouteTiming` auf `group4-route-timing`.
+  - [ ] Stage 2 liest `group4-route-timing`, filtert `delay > 180 s`, publiziert ins `delays`-Topic im Format **`id: 123, delay: 321`**.
   - [ ] Manuell verifiziert: Dashboard <http://192.168.111.11:8080/status/> zeigt unsere Verspätungen, Topics in Kouncil sichtbar.
 - [ ] **Persönliche Reflexion + Lernbericht** in Phase 4.
 - [ ] (Sofern Case 5 zugewiesen:) **Videopräsentation** + **Lösungsverteidigung**.
@@ -353,10 +353,10 @@ Wir folgen dem **Design-oriented Problem-Based Learning** mit 4 Phasen:
 | [`Materialien zu Umsetzung/beispiel_loesungskonzept.pdf`](Materialien%20zu%20Umsetzung/beispiel_loesungskonzept.pdf) | Vorlage Temperaturmonitoring (Konzept-Aufbau) |
 | [`Materialien zu Umsetzung/Step By Step Guide Umsetzung.pdf`](Materialien%20zu%20Umsetzung/Step%20By%20Step%20Guide%20Umsetzung.pdf) | Implementierungs-Anleitung Driver-Delay |
 | [`Materialien zu Umsetzung/Utils.java`](Materialien%20zu%20Umsetzung/Utils.java) | Helper-Klasse (Standalone-Variante mit `package kafka_streams`) |
-| [`Materialien zu Umsetzung/kafka_sample/`](Materialien%20zu%20Umsetzung/kafka_sample/) | Maven-Projekt-Skelett (empfohlener Startpunkt) |
+| [`Case5_KafkaApp/`](Case5_KafkaApp/) | Maven-Projekt-Skelett (empfohlener Startpunkt) |
 | [`Startpunkte Selbststudium/Bruns-Dunkel2015_Chapter_ComplexEventProcessingImÜberbl.pdf`](Startpunkte%20Selbststudium/Bruns-Dunkel2015_Chapter_ComplexEventProcessingIm%C3%9Cberbl.pdf) | CEP-Grundlagen (Event, EPA, EPN, EDA) |
 | [`Startpunkte Selbststudium/Bruns-Dunkel2015_Chapter_SprachkonzepteZurEreignisverar.pdf`](Startpunkte%20Selbststudium/Bruns-Dunkel2015_Chapter_SprachkonzepteZurEreignisverar.pdf) | Sprachkonzepte / EPLs / Esper |
 | [`Startpunkte Selbststudium/2015_Article_.pdf`](Startpunkte%20Selbststudium/2015_Article_.pdf) | Schaaf/Wilke 2015 — Ereignisverarbeitung in Smart Cities |
 | [`../Modulübersicht.pdf`](../Modul%C3%BCbersicht.pdf) | Modul- und PBL-Konzept, Bewertung, Abgabemodi |
 | [`../System Overview.png`](../System%20Overview.png) | Container-Landscape (Kafka, Stream Generator, Kouncil etc.) |
-| [`../group_10.conf`](../group_10.conf) | WireGuard-VPN-Konfig für Gruppe 10 |
+| [`../group_10.conf`](../group_10.conf) | WireGuard-VPN-Konfig für Gruppe 4 |
